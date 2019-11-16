@@ -8,10 +8,26 @@ NUMBER_OF_COLUMNS=3
 
 #VARIABLES
 boardPositionCount=0
+letterOfPlayer=""
 
 #DICTIONARYS
 declare -A ticTacToe
 
+#Player know the letter
+function playerLetter()
+{
+	checkRandom=$((RANDOM%2))
+	if [ $checkRandom -eq 0 ]
+	then
+		letterOfPlayer="X"
+		echo $letterOfPlayer
+	else
+		letterOfPlayer="0"
+		echo $letterOfPlayer
+	fi
+}
+
+#Initialise a tic tac toe board
 function start()
 {
 	for(( i=1; i<=$NUMBER_OF_ROWS; i++ ))
@@ -22,6 +38,7 @@ function start()
 	done
 }
 
+#Display a tic tac toe board
 function display()
 {
 	boardPositionCount=0
@@ -31,10 +48,13 @@ function display()
 	done
 }
 
+#main function
 function main()
 {
 	start
 	display
+	letterOfPlayer="$( playerLetter )"
+	echo "Your letter is "$letterOfPlayer
 }
 
 main
