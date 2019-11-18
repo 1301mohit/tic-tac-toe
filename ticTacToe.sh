@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 echo Welcome to  TIE TAC TOE GAME
 
@@ -12,6 +12,20 @@ letterOfPlayer=""
 
 #DICTIONARYS
 declare -A ticTacToe
+
+#toss to check who plays first
+function toss()
+{
+	checkToss=$((Random%2))
+	echo "1.Head 2.Tail"
+	read userOption
+	if [ $userOption -eq $(($checkToss + 1 )) ]
+	then
+		echo "Player play first"
+	else
+		echo "Computer play first"
+	fi
+}
 
 #Player know the letter
 function playerLetter()
@@ -55,6 +69,7 @@ function main()
 	display
 	letterOfPlayer="$( playerLetter )"
 	echo "Your letter is "$letterOfPlayer
+	toss
 }
 
 main
