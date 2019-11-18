@@ -13,6 +13,14 @@ letterOfPlayer=""
 #DICTIONARYS
 declare -A ticTacToe
 
+#Choose the valid cells
+function chooseCell()
+{
+	echo "Choose a cell"
+	read cell
+	echo "Your cell is" $cell
+}
+
 #toss to check who plays first
 function toss()
 {
@@ -22,6 +30,7 @@ function toss()
 	if [ $userOption -eq $(($checkToss + 1 )) ]
 	then
 		echo "Player play first"
+		chooseCell
 	else
 		echo "Computer play first"
 	fi
