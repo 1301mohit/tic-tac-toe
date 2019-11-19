@@ -1,4 +1,4 @@
-#!/bin/bash
+=#!/bin/bash -x
 
 echo Welcome to  TIE TAC TOE GAME
 
@@ -25,7 +25,7 @@ function chance()
 		do
 			echo "Choose a cell(1 to 9):"
 			cell="$( chooseCell )"
-			if [ "${ticTacToe[$cell]}" == '-' ] 
+			if [ "${ticTacToe[$cell]}" = '-' ] 
 			then
 				changeChance=1
 				ticTacToe[$cell]="X"
@@ -40,7 +40,7 @@ function chance()
 		while [ true ]
 		do
 			cell=$((RANDOM % 9 + 1))
-			if [ "${ticTacToe[$cell]}" == "-" ]
+			if [ "${ticTacToe[$cell]}" = "-" ]
 			then
 				changeChance=0
 				ticTacToe[$cell]="0"
@@ -54,75 +54,58 @@ function chance()
 
 function checkRowColumn()
 {
-	checkWinner=0
-	if [ $1 != "-" ] && [ $1 ==  $2 ] && [ $2 == $3 ]
-	then
-		checkWinner=1
-	fi
-	if [ $checkWinner -eq 1 ]
+	if [ $1 != "-" ] && [ $1 = $2 ] && [ $2 = $3 ]
 	then
 		echo "TRUE"
-	else
-		echo "FALSE"
 	fi
+	echo "FALSE"
 }
 
 function checkRow()
 {
-	checkWinner=0
 	cell=1
 	for(( i=1; i<=3; i++ ))
 	do
 		checkRowColumn="$( checkRowColumn "${ticTacToe[$((cell++))]}" "${ticTacToe[$((cell++))]}" "${ticTacToe[$((cell++))]}" )"
-		if [ $checkRowColumn == "TRUE" ]
+		if [ checkRowColumn = "TRUE" ]
 		then
-			checkWinner=1
+			echo "TRUE"
 		fi
 	done 
-	if [ $checkWinner -eq 1 ]
-	then
-		echo "TRUE"
-	else
-		echo "FALSE"
-	fi	
+	echo "FALSE"	
 }
 
 function checkColumn()
 {
-	checkWinner=0
 	for(( i=1; i<=3; i++ ))
 	do
 		checkRowColumn="$( checkRowColumn "${ticTacToe[$i]}" "${ticTacToe[$(($i+3))]}" "${ticTacToe[$(($i+6))]}" )"
-		if [ $checkRowColumn == "TRUE" ]
+		if [ checkRowColumn = "TRUE" ]
 		then
-			checkWinner=1
+			echo "TRUE"
 		fi
 	done
-	if [ $checkWinner -eq 1 ]
-	then
-		echo "TRUE"
-	else
-		echo "FALSE"
-	fi
+	echo "FALSE"
 }
 
 function checkDiagonal()
 {
 	cell=1
 	checkDiagonal="$( checkRowColumn "${ticTacToe[$cell]}" "${ticTacToe[$(($cell+4))]}" "${ticTacToe[$(($cell+8))]}")"
-	checkDiagonal1="$( checkRowColumn "${ticTacToe[$(($cell+2))]}" "${ticTacToe[$(($cell+4))]}" "${ticTacToe[$(($cell+6))]}")"
-	if [ $checkDiagonal == "TRUE" ] || [ $checkDiagonal1 == "TRUE" ]
+	if [ checkDiagonal = "TRUE" ]
 	then
 		echo "TRUE"
-	else
-		echo "FALSE"
+	fi
+	checkDiagonal="$( checkRowColumn "${ticTacToe[$(($cell+2))]}" "${ticTacToe[$(($cell+4))]}" "${ticTacToe[$(($cell+6))]")"
+	if [ checkDiagonal = "FALSE" ]
+	then
+		echo "TRUE"
 	fi
 }
 
 #Determine every move 
 function determineMove()
 {
-	checkWinner=0
 	while [ $countNumberOfCellField -le $TOTAL_NUMBER_OF_CELL_FIELD ]
 	do
 		chance
@@ -131,22 +114,12 @@ function determineMove()
 		checkRows="$( checkRow )"
 		checkColumns="$( checkColumn )"
 		checkDiagonals="$( checkDiagonal )"
-		echo "checkRows:"$checkRows
-		echo "checkColumns:"$checkColumns
-		echo "checkDiagonals:"$checkDiagonals
-		if [ $checkRows == "TRUE" ] || [ $checkColumns == "TRUE" ] || [ $checkDiagonals == "TRUE" ]
+		if [ checkRows = "TRUE" ] && [ checkColumns = "TRUE" ] && [ checkDiagonals = "TRUE" ]
 		then
-			checkWinner=1
-			break
+			echo "Winner"
 		fi
 	done
-	
-	if [ $checkWinner -eq 0 ]
-	then
-		echo "Game draw"
-	else
-		echo "Winner"
-	fi
+	echo "Game draw"
 }
 
 #Choose the valid cells
@@ -166,10 +139,10 @@ function toss()
 	if [ $userOption -eq $(($checkToss + 1 )) ]
 	then
 		echo "Player play first"
-		changeChance=0
+		#chooseCell
 	else
 		echo "Computer play first"
-		changeChance=1
+		#cell=$((RANDOM % 9 + 1))
 	fi
 }
 
@@ -213,12 +186,11 @@ function display()
 
 #main function
 function main()
-
 {
 	start
 	display
 	letterOfPlayer="$( playerLetter )"
-#	echo "Your letter is "$letterOfPlayer
+	echo "Your letter is "$letterOfPlayer
 	toss
 	determineMove
 }
