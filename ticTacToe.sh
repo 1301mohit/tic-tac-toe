@@ -13,6 +13,9 @@ letterOfPlayer=""
 changeChance=0
 countNumberOfCellField=1
 winner=0
+cellToWinOpp=0
+letter="0"
+check=0
 
 #DICTIONARYS
 declare -A ticTacToe
@@ -34,25 +37,34 @@ function chance()
 			else
 				echo "You choose wrong option"
 			fi
+			cellToWinOpp=0
 		done
 	else
 		while [ true ]
 		do
-			checkWinMoveInRow
-			checkWinMoveInColumn
-			checkWinMoveInDiagonal
-			if [ $winner -eq 0 ]
-			then
+			for (( i=0; i<2; i++ ))
+			do
+				checkWinMoveInRow
+				checkWinMoveInColumn
+				checkWinMoveInDiagonal
+				if [ $winner -eq 1 ]
+				then
+					break
+				else
+					letter="X"
+				fi	
+			done
 				cell=$((RANDOM % 9 + 1))
 				if [ "${ticTacToe[$cell]}" == "-" ]
 				then
 					changeChance=0
-					ticTacToe[$cell]="0"
+					if [ $winner -eq 0 ] && [ $cellToWinOpp -eq 0 ]
+					then
+						echo "cellToWinOpp" $cellToWinOpp
+						ticTacToe[$cell]="0"
+					fi
 					break
 				fi
-			else
-				break
-			fi
 		done
 	fi
 }
@@ -75,7 +87,7 @@ function checkRowColumn()
 function checkWinMoveInRow()
 {
 	cell=1
-	for(( i=1; i<=3; i++ ))
+	for (( j=1; j<=3; j++ ))
 	do
 		checkWinMove $((cell++)) $((cell++)) $((cell++))
 	done
@@ -84,51 +96,50 @@ function checkWinMoveInRow()
 function checkWinMove()
 {
 	check=0
-	if [ "${ticTacToe[$1]}" == "0" ] && [ "${ticTacToe[$1]}" == "${ticTacToe[$2]}" ] && [ "${ticTacToe[$3]}" == "-" ]
-	then
-		ticTacToe[$3]="0"
-		check=1
-	elif [ "${ticTacToe[$1]}" == "0" ] && [ "${ticTacToe[$1]}" == "${ticTacToe[$3]}" ] && [ "${ticTacToe[$2]}" == "-" ]
-	then
-		ticTacToe[$2]="0"
-		check=1
-	elif [ "${ticTacToe[$2]}" == "0" ] && [ "${ticTacToe[$2]}" == "${ticTacToe[$3]}" ] && [ "${ticTacToe[$1]}" == "-" ]
-	then
-		ticTacToe[$1]="0"
-		check=1
-	elif [ "${ticTacToe[$2]}" == "0" ] && [ "${ticTacToe[$2]}" == "${ticTacToe[$1]}" ] && [ "${ticTacToe[$3]}" == "-" ]
-	then
-		ticTacToe[$3]="0"
-		check=1
-	elif [ "${ticTacToe[$3]}" == "0" ] && [ "${ticTacToe[$3]}" == "${ticTacToe[$1]}" ] && [ "${ticTacToe[$2]}" == "-" ]
-	then
-		ticTacToe[$2]="0"
-		check=1
-	elif [ "${ticTacToe[$3]}" == "0" ] && [ "${ticTacToe[$3]}" == "${ticTacToe[$2]}" ] && [ "${ticTacToe[$1]}" == "-" ]
-	then
-		ticTacToe[$1]="0"
-		check=1
-	fi
-	if [ $check -eq 1 ]
-	then
-		changeChance=0
-		display
-		checkRows="$( checkRow )"
-		checkColumns="$( checkColumn )"
-		checkDiagonals="$( checkDiagonal )"
-		echo "checkRows:"$checkRows
-		echo "checkColumns:"$checkColumns
-		echo "checkDiagonals:"$checkDiagonals
-		if [ $checkRows == "TRUE" ] || [ $checkColumns == "TRUE" ] || [ $checkDiagonals == "TRUE" ]
+		if [ "${ticTacToe[$1]}" == $letter ] && [ "${ticTacToe[$1]}" == "${ticTacToe[$2]}" ] && [ "${ticTacToe[$3]}" == "-" ]
 		then
-			winner=1
+			ticTacToe[$3]="0"
+			check=1
+		elif [ "${ticTacToe[$1]}" == $letter ] && [ "${ticTacToe[$1]}" == "${ticTacToe[$3]}" ] && [ "${ticTacToe[$2]}" == "-" ]
+		then
+			ticTacToe[$2]="0"
+			check=1
+		elif [ "${ticTacToe[$2]}" == $letter ] && [ "${ticTacToe[$2]}" == "${ticTacToe[$3]}" ] && [ "${ticTacToe[$1]}" == "-" ]
+		then
+			ticTacToe[$1]="0"
+			check=1
+		elif [ "${ticTacToe[$2]}" == $letter ] && [ "${ticTacToe[$2]}" == "${ticTacToe[$1]}" ] && [ "${ticTacToe[$3]}" == "-" ]
+		then
+			ticTacToe[$3]="0"
+			check=1
+		elif [ "${ticTacToe[$3]}" == $letter ] && [ "${ticTacToe[$3]}" == "${ticTacToe[$1]}" ] && [ "${ticTacToe[$2]}" == "-" ]
+		then
+			ticTacToe[$2]="0"
+			check=1
+		elif [ "${ticTacToe[$3]}" == $letter ] && [ "${ticTacToe[$3]}" == "${ticTacToe[$2]}" ] && [ "${ticTacToe[$1]}" == "-" ]
+		then
+			ticTacToe[$1]="0"
+			check=1
 		fi
-	fi
+		if [ $check -eq 1 ]
+		then
+			changeChance=0
+			display
+			checkRows="$( checkRow )"
+			checkColumns="$( checkColumn )"
+			checkDiagonals="$( checkDiagonal )"
+			cellToWinOpp=1
+			if [ $checkRows == "TRUE" ] || [ $checkColumns == "TRUE" ] || [ $checkDiagonals == "TRUE" ]
+			then
+				winner=1
+			fi
+		fi	
+	
 }
 
 function checkWinMoveInColumn()
 {
-	for(( i=1; i<=3; i++ ))
+	for(( j=1; j<=3; j++ ))
 	do
 		checkWinMove $i $(($i+3)) $(($i+6))
 	done
@@ -208,7 +219,11 @@ function determineMove()
 			break
 		fi
 		((countNumberOfCellField++))
-		display
+		if [ $cellToWinOpp -eq 0 ]
+		then
+			display
+		fi
+		cellToWinOpp=0
 		checkRows="$( checkRow )"
 		checkColumns="$( checkColumn )"
 		checkDiagonals="$( checkDiagonal )"
