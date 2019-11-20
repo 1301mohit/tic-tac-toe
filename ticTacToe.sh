@@ -12,6 +12,7 @@ boardPositionCount=0
 letterOfPlayer=""
 changeChance=0
 countNumberOfCellField=1
+winner=0
 
 #DICTIONARYS
 declare -A ticTacToe
@@ -29,8 +30,6 @@ function chance()
 			then
 				changeChance=1
 				ticTacToe[$cell]="X"
-				#echo ${!ticTacToe[@]}
-				#echo ${ticTacToe[@]}
 				break
 			else
 				echo "You choose wrong option"
@@ -39,13 +38,19 @@ function chance()
 	else
 		while [ true ]
 		do
-			cell=$((RANDOM % 9 + 1))
-			if [ "${ticTacToe[$cell]}" == "-" ]
+			checkWinMoveInRow
+			checkWinMoveInColumn
+			checkWinMoveInDiagonal
+			if [ $winner -eq 0 ]
 			then
-				changeChance=0
-				ticTacToe[$cell]="0"
-				#echo ${!ticTacToe[@]}
-				#echo ${ticTacToe[1]}
+				cell=$((RANDOM % 9 + 1))
+				if [ "${ticTacToe[$cell]}" == "-" ]
+				then
+					changeChance=0
+					ticTacToe[$cell]="0"
+					break
+				fi
+			else
 				break
 			fi
 		done
@@ -67,17 +72,88 @@ function checkRowColumn()
 	fi
 }
 
+function checkWinMoveInRow()
+{
+	cell=1
+	for(( i=1; i<=3; i++ ))
+	do
+		checkWinMove $((cell++)) $((cell++)) $((cell++))
+	done
+}
+
+function checkWinMove()
+{
+	check=0
+	if [ "${ticTacToe[$1]}" == "0" ] && [ "${ticTacToe[$1]}" == "${ticTacToe[$2]}" ] && [ "${ticTacToe[$3]}" == "-" ]
+	then
+		ticTacToe[$3]="0"
+		check=1
+	elif [ "${ticTacToe[$1]}" == "0" ] && [ "${ticTacToe[$1]}" == "${ticTacToe[$3]}" ] && [ "${ticTacToe[$2]}" == "-" ]
+	then
+		ticTacToe[$2]="0"
+		check=1
+	elif [ "${ticTacToe[$2]}" == "0" ] && [ "${ticTacToe[$2]}" == "${ticTacToe[$3]}" ] && [ "${ticTacToe[$1]}" == "-" ]
+	then
+		ticTacToe[$1]="0"
+		check=1
+	elif [ "${ticTacToe[$2]}" == "0" ] && [ "${ticTacToe[$2]}" == "${ticTacToe[$1]}" ] && [ "${ticTacToe[$3]}" == "-" ]
+	then
+		ticTacToe[$3]="0"
+		check=1
+	elif [ "${ticTacToe[$3]}" == "0" ] && [ "${ticTacToe[$3]}" == "${ticTacToe[$1]}" ] && [ "${ticTacToe[$2]}" == "-" ]
+	then
+		ticTacToe[$2]="0"
+		check=1
+	elif [ "${ticTacToe[$3]}" == "0" ] && [ "${ticTacToe[$3]}" == "${ticTacToe[$2]}" ] && [ "${ticTacToe[$1]}" == "-" ]
+	then
+		ticTacToe[$1]="0"
+		check=1
+	fi
+	if [ $check -eq 1 ]
+	then
+		changeChance=0
+		display
+		checkRows="$( checkRow )"
+		checkColumns="$( checkColumn )"
+		checkDiagonals="$( checkDiagonal )"
+		echo "checkRows:"$checkRows
+		echo "checkColumns:"$checkColumns
+		echo "checkDiagonals:"$checkDiagonals
+		if [ $checkRows == "TRUE" ] || [ $checkColumns == "TRUE" ] || [ $checkDiagonals == "TRUE" ]
+		then
+			winner=1
+		fi
+	fi
+}
+
+function checkWinMoveInColumn()
+{
+	for(( i=1; i<=3; i++ ))
+	do
+		checkWinMove $i $(($i+3)) $(($i+6))
+	done
+}
+
+function checkWinMoveInDiagonal()
+{
+	cell=1
+	checkWinMove $cell $(($cell+4)) $(($cell+8))
+	checkWinMove $(($cell+2)) $(($cell+4)) $(($cell+6))	
+}
+
 function checkRow()
 {
 	checkWinner=0
 	cell=1
 	for(( i=1; i<=3; i++ ))
 	do
-		checkRowColumn="$( checkRowColumn "${ticTacToe[$((cell++))]}" "${ticTacToe[$((cell++))]}" "${ticTacToe[$((cell++))]}" )"
+			checkRowColumn="$( checkRowColumn "${ticTacToe[$cell]}" "${ticTacToe[$(($cell+1))]}" "${ticTacToe[$(($cell+2))]}" )"
 		if [ $checkRowColumn == "TRUE" ]
 		then
 			checkWinner=1
+			break
 		fi
+		cell=$(($cell + 3))
 	done 
 	if [ $checkWinner -eq 1 ]
 	then
@@ -96,6 +172,7 @@ function checkColumn()
 		if [ $checkRowColumn == "TRUE" ]
 		then
 			checkWinner=1
+			break
 		fi
 	done
 	if [ $checkWinner -eq 1 ]
@@ -126,14 +203,15 @@ function determineMove()
 	while [ $countNumberOfCellField -le $TOTAL_NUMBER_OF_CELL_FIELD ]
 	do
 		chance
+		if [ $winner -eq 1 ]
+		then
+			break
+		fi
 		((countNumberOfCellField++))
 		display
 		checkRows="$( checkRow )"
 		checkColumns="$( checkColumn )"
 		checkDiagonals="$( checkDiagonal )"
-		echo "checkRows:"$checkRows
-		echo "checkColumns:"$checkColumns
-		echo "checkDiagonals:"$checkDiagonals
 		if [ $checkRows == "TRUE" ] || [ $checkColumns == "TRUE" ] || [ $checkDiagonals == "TRUE" ]
 		then
 			checkWinner=1
@@ -141,7 +219,7 @@ function determineMove()
 		fi
 	done
 	
-	if [ $checkWinner -eq 0 ]
+	if [ $checkWinner -eq 0 ] && [ $winner -eq 0 ]
 	then
 		echo "Game draw"
 	else
@@ -176,15 +254,8 @@ function toss()
 #Player know the letter
 function playerLetter()
 {
-	#checkRandom=$((RANDOM%2))
-	#if [ $checkRandom -eq 0 ]
-	#then
-		letterOfPlayer="X"
-		echo $letterOfPlayer
-	#else
-	#	letterOfPlayer="0"
-	#	echo $letterOfPlayer
-	#fi
+	letterOfPlayer="X"
+	echo $letterOfPlayer
 }
 
 #Initialise a tic tac toe board
@@ -218,7 +289,7 @@ function main()
 	start
 	display
 	letterOfPlayer="$( playerLetter )"
-#	echo "Your letter is "$letterOfPlayer
+	echo "Your letter is "$letterOfPlayer
 	toss
 	determineMove
 }
